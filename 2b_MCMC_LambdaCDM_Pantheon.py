@@ -45,8 +45,8 @@ def emcee_LambdaCDM(prior=False, priorval=None, priorsdev=None, dataname="CC+SN+
         # function definition
         # prior (mostly uninformative)
         def log_prior(theta):
-            H0, Omega_M0, _ = theta
-            if 50 < H0 < 100 and 0.1 < Omega_M0 < 0.5 and -100 < _ < 100:
+            H0, Omega_M0, M = theta
+            if 50 < H0 < 100 and 0.1 < Omega_M0 < 0.5 and -50 < M < 50:
                 return 0.0
             return -np.inf
 
