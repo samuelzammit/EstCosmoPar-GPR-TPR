@@ -151,21 +151,21 @@ runHetGP <- function(type, dataname, covname, priorname, priorvalue, priorsd, re
   # print parameter estimates and distance calculations (distance in sigma-units)
   if(priorname == "NoPrior") {
     cat(paste0(dataname, ", Homoscedastic ", type, ": ", round(hompred$mean[1], 3), " p/m ", round(sqrt(hompred$sd2[1]), 3), "\n"))
-    for(j in 1:length(prinames)) cat(paste0("Distance to ", prinames[j], ": ", calcDistance(hompred$mean[1], sqrt(hompred$sd2[1]), privalues[j], prisds[j])), "\n")
+    for(j in 2:length(prinames)) cat(paste0("Distance to ", prinames[j], ": ", calcDistance(hompred$mean[1], sqrt(hompred$sd2[1]), privalues[j], prisds[j])), "\n")
     cat("\n")
     
     cat(paste0(dataname, ", Heteroscedastic ", type, ": ", round(hetpred$mean[1], 3), " p/m ", round(sqrt(hetpred$sd2[1]), 3), "\n"))
-    for(j in 1:length(prinames)) cat(paste0("Distance to ", prinames[j], ": ", calcDistance(hetpred$mean[1], sqrt(hetpred$sd2[1]), privalues[j], prisds[j])), "\n")
+    for(j in 2:length(prinames)) cat(paste0("Distance to ", prinames[j], ": ", calcDistance(hetpred$mean[1], sqrt(hetpred$sd2[1]), privalues[j], prisds[j])), "\n")
     cat("\n")
     
   } else {
     
     cat(paste0(dataname, ", Homoscedastic ", type, ", ", priorname, " prior: ", round(hompred$mean[1], 3), " p/m ", round(sqrt(hompred$sd2[1]), 3), "\n"))
-    for(j in 1:length(prinames)) cat(paste0("Distance to ", prinames[j], ": ", calcDistance(hompred$mean[1], sqrt(hompred$sd2[1]), privalues[j], prisds[j])), "\n")
+    for(j in 2:length(prinames)) cat(paste0("Distance to ", prinames[j], ": ", calcDistance(hompred$mean[1], sqrt(hompred$sd2[1]), privalues[j], prisds[j])), "\n")
     cat("\n")
     
     cat(paste0(dataname, ", Heteroscedastic ", type, ", ", priorname, " prior: ", round(hetpred$mean[1], 3), " p/m ", round(sqrt(hetpred$sd2[1]), 3), "\n"))
-    for(j in 1:length(prinames)) cat(paste0("Distance to ", prinames[j], ": ", calcDistance(hetpred$mean[1], sqrt(hetpred$sd2[1]), privalues[j], prisds[j])), "\n")
+    for(j in 2:length(prinames)) cat(paste0("Distance to ", prinames[j], ": ", calcDistance(hetpred$mean[1], sqrt(hetpred$sd2[1]), privalues[j], prisds[j])), "\n")
     cat("\n")
     
   }
