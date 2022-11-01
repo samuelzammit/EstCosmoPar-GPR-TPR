@@ -172,9 +172,9 @@ runHetGP <- function(type, dataname, covname, priorname, priorvalue, priorsd, re
   
   # print "done" message
   if(priorname == "NoPrior") {
-    cat(paste0(covname, ", ", dataname, ", ", type, ": DONE\n"))
+    cat(paste0(covname, ", ", dataname, ", ", type, ": DONE\n\n"))
   } else {
-    cat(paste0(covname, ", ", dataname, ", ", type, ", ", priorname, ": DONE\n"))
+    cat(paste0(covname, ", ", dataname, ", ", type, ", ", priorname, ": DONE\n\n"))
   }
   
 }
