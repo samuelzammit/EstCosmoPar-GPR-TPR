@@ -114,163 +114,161 @@ def plotComparison(methodname='all', datasetname='all', priorname='all', doubles
     fil = data_path + dataname + 'Dataset.csv'
 
     # load the dataset and count the number of data points
+	nr = 1
+	with open(fil, 'r+') as f:
+		reader = csv.reader(f)
+		next(reader, None)
+		for row in reader:
+			nr += 1
 
+	# load the data points into arrays
+	value = np.zeros(nr)
+	lower = np.zeros(nr)
+	upper = np.zeros(nr)
+	method = ["" for x in range(nr)]
+	prior = ["" for x in range(nr)]
+	dataset = ["" for x in range(nr)]
 
-nr = 1
-with open(fil, 'r+') as f:
-    reader = csv.reader(f)
-    next(reader, None)
-    for row in reader:
-        nr += 1
+	i = 0
+	with open(fil, 'r+') as f:
+		reader = csv.reader(f)
+		next(reader, None)
+		for row in reader:
+			method[i] = row[0]
+			prior[i] = row[1]
+			dataset[i] = row[2]
+			value[i] = float(row[3])
+			lower[i] = float(row[4])
+			upper[i] = float(row[5])
+			i += 1
 
-# load the data points into arrays
-value = np.zeros(nr)
-lower = np.zeros(nr)
-upper = np.zeros(nr)
-method = ["" for x in range(nr)]
-prior = ["" for x in range(nr)]
-dataset = ["" for x in range(nr)]
+	# filtering part
+	indicesToRemove = []
+	if methodname is not 'all':
+		a = np.where([method[i] != methodname for i in range(len(method))])[0]
+		indicesToRemove = np.concatenate((indicesToRemove, a))
+	if priorname is not 'all':
+		a = np.where([prior[i] != priorname for i in range(len(prior))])[0]
+		indicesToRemove = np.concatenate((indicesToRemove, a))
+	if datasetname is not 'all':
+		a = np.where([dataset[i] != datasetname for i in range(len(dataset))])[0]
+		indicesToRemove = np.concatenate((indicesToRemove, a))
 
-i = 0
-with open(fil, 'r+') as f:
-    reader = csv.reader(f)
-    next(reader, None)
-    for row in reader:
-        method[i] = row[0]
-        prior[i] = row[1]
-        dataset[i] = row[2]
-        value[i] = float(row[3])
-        lower[i] = float(row[4])
-        upper[i] = float(row[5])
-        i += 1
+	# if no indices to remove, then skip
+	try:
+		indicesToRemove = np.unique(indicesToRemove.ravel())
+	except AttributeError:
+		pass
 
-# filtering part
-indicesToRemove = []
-if methodname is not 'all':
-    a = np.where([method[i] != methodname for i in range(len(method))])[0]
-    indicesToRemove = np.concatenate((indicesToRemove, a))
-if priorname is not 'all':
-    a = np.where([prior[i] != priorname for i in range(len(prior))])[0]
-    indicesToRemove = np.concatenate((indicesToRemove, a))
-if datasetname is not 'all':
-    a = np.where([dataset[i] != datasetname for i in range(len(dataset))])[0]
-    indicesToRemove = np.concatenate((indicesToRemove, a))
+	method = np.delete(method, indicesToRemove)
+	prior = np.delete(prior, indicesToRemove)
+	dataset = np.delete(dataset, indicesToRemove)
+	value = np.delete(value, indicesToRemove)
+	lower = np.delete(lower, indicesToRemove)
+	upper = np.delete(upper, indicesToRemove)
 
-# if no indices to remove, then skip
-try:
-    indicesToRemove = np.unique(indicesToRemove.ravel())
-except AttributeError:
-    pass
+	# number of rows filtered
+	nrnew = len(method)
 
-method = np.delete(method, indicesToRemove)
-prior = np.delete(prior, indicesToRemove)
-dataset = np.delete(dataset, indicesToRemove)
-value = np.delete(value, indicesToRemove)
-lower = np.delete(lower, indicesToRemove)
-upper = np.delete(upper, indicesToRemove)
+	# columns "method", "kernel", "prior", "dataset"
+	det = ["" for x in range(nrnew)]
+	for i in range(nrnew):
+		det[i] = det[i] + method[i] + ", " + dataset[i] + ", " + prior[i] + ": "
 
-# number of rows filtered
-nrnew = len(method)
+	# join with value
+	paras = []
+	for i in range(nrnew):
+		if printvalues:
+			if lower[i] == upper[i]:
+				paras.append(det[i] + str(value[i]) + '${\pm}$' + str(upper[i]))
+			else:
+				paras.append(det[i] + str(value[i]) + '$^{+' + str(upper[i]) + '}_{-' + str(lower[i]) + '}$')
+		else:
+			paras.append(det[i])
 
-# columns "method", "kernel", "prior", "dataset"
-det = ["" for x in range(nrnew)]
-for i in range(nrnew):
-    det[i] = det[i] + method[i] + ", " + dataset[i] + ", " + prior[i] + ": "
+	all_data = []
+	for i in range(nrnew):
+		all_data.append({'ml': value[i], 'e1_sig': [upper[i], -lower[i]]})
 
-# join with value
-paras = []
-for i in range(nrnew):
-    if printvalues:
-        if lower[i] == upper[i]:
-            paras.append(det[i] + str(value[i]) + '${\pm}$' + str(upper[i]))
-        else:
-            paras.append(det[i] + str(value[i]) + '$^{+' + str(upper[i]) + '}_{-' + str(lower[i]) + '}$')
-    else:
-        paras.append(det[i])
+	# add average
+	meanvalue = np.mean(value)
+	meanupper = np.mean(upper)
+	meanlower = np.mean(lower)
+	if printvalues:
+		if meanlower == meanupper:
+			paras.append("Average: " + str(meanvalue) + '${\pm}$' + str(meanupper))
+		else:
+			paras.append("Average: " + str(meanvalue) + '$^{+' + str(meanupper) + '}_{-' + str(meanlower) + '}$')
+	else:
+		paras.append("Average: ")
+	all_data.append({'ml': meanvalue, 'e1_sig': [meanupper, -meanlower]})
 
-all_data = []
-for i in range(nrnew):
-    all_data.append({'ml': value[i], 'e1_sig': [upper[i], -lower[i]]})
+	pos_num = nrnew + 1  # + 1 to include average
 
-# add average
-meanvalue = np.mean(value)
-meanupper = np.mean(upper)
-meanlower = np.mean(lower)
-if printvalues:
-    if meanlower == meanupper:
-        paras.append("Average: " + str(meanvalue) + '${\pm}$' + str(meanupper))
-    else:
-        paras.append("Average: " + str(meanvalue) + '$^{+' + str(meanupper) + '}_{-' + str(meanlower) + '}$')
-else:
-    paras.append("Average: ")
-all_data.append({'ml': meanvalue, 'e1_sig': [meanupper, -meanlower]})
+	positions = []
+	labels = []
+	for i in range(pos_num + 2):
+		positions.append(i)
+		labels.append('')
 
-pos_num = nrnew + 1  # + 1 to include average
+	# move to "files" directory
+	os.chdir("./files")
 
-positions = []
-labels = []
-for i in range(pos_num + 2):
-    positions.append(i)
-    labels.append('')
+	# get filename for plot
+	plotTitle = 'H0whisker'
+	if datasetname is not 'all':
+		plotTitle = plotTitle + '_' + datasetname
+	if methodname is not 'all':
+		plotTitle = plotTitle + '_' + methodname
+	if priorname is not 'all':
+		plotTitle = plotTitle + '_' + priorname
 
-# move to "files" directory
-os.chdir("./files")
+	pdf = PdfPages(plotTitle + '.pdf')
 
-# get filename for plot
-plotTitle = 'H0whisker'
-if datasetname is not 'all':
-    plotTitle = plotTitle + '_' + datasetname
-if methodname is not 'all':
-    plotTitle = plotTitle + '_' + methodname
-if priorname is not 'all':
-    plotTitle = plotTitle + '_' + priorname
+	if doublesize:
+		plt.rcParams['figure.figsize'] = (8, 10)
+	else:
+		plt.rcParams['figure.figsize'] = (4, 5)
 
-pdf = PdfPages(plotTitle + '.pdf')
+	# plot the vertical bars for reference: R20 vs CMB
+	plt.bar(74.22, 100, width=1.82, facecolor='cyan', alpha=0.15)  # Riess (2019)
+	plt.bar(67.4, 100, width=0.5, facecolor='pink', alpha=0.25)  # Planck (2020)
 
-if doublesize:
-    plt.rcParams['figure.figsize'] = (8, 10)
-else:
-    plt.rcParams['figure.figsize'] = (4, 5)
+	# plot each data point with attached label
+	ypos = 0
+	for i in range(len(paras)):
+		ypos = nrnew - i + 1
+		elp = ErrorLinePlotter(all_data[i], position=ypos)
+		labels[elp.position] = paras[i]
+		if i != len(paras) - 1:  # for individual readings
+			plt.text(55.5, ypos - 0.1, calcsigmadistance(value[i], 67.4, upper[i], 0.5), size=5)
+			plt.text(80, ypos - 0.1, calcsigmadistance(value[i], 74.22, upper[i], 1.82), size=5)
+		else:  # for average at the end
+			plt.text(55.5, ypos - 0.1, calcsigmadistance(meanvalue, 67.4, meanupper, 0.5), size=5)
+			plt.text(80, ypos - 0.1, calcsigmadistance(meanvalue, 74.22, meanupper, 1.82), size=5)
+		elp.set_props(0.8, '-', black, 0.7, black, 0.8, 'marker', mpsize=2.0, mpcolor=black, mshape='o')
+		elp.plot()
 
-# plot the vertical bars for reference: R20 vs CMB
-plt.bar(74.22, 100, width=1.82, facecolor='cyan', alpha=0.15)  # Riess (2019)
-plt.bar(67.4, 100, width=0.5, facecolor='pink', alpha=0.25)  # Planck (2020)
+	# add dotted line between individual readings and average
+	plt.axhline(y=ypos + 0.5, color='black', linewidth=0.5, linestyle='dashed')
 
-# plot each data point with attached label
-ypos = 0
-for i in range(len(paras)):
-    ypos = nrnew - i + 1
-    elp = ErrorLinePlotter(all_data[i], position=ypos)
-    labels[elp.position] = paras[i]
-    if i != len(paras) - 1:  # for individual readings
-        plt.text(55.5, ypos - 0.1, calcsigmadistance(value[i], 67.4, upper[i], 0.5), size=5)
-        plt.text(80, ypos - 0.1, calcsigmadistance(value[i], 74.22, upper[i], 1.82), size=5)
-    else:  # for average at the end
-        plt.text(55.5, ypos - 0.1, calcsigmadistance(meanvalue, 67.4, meanupper, 0.5), size=5)
-        plt.text(80, ypos - 0.1, calcsigmadistance(meanvalue, 74.22, meanupper, 1.82), size=5)
-    elp.set_props(0.8, '-', black, 0.7, black, 0.8, 'marker', mpsize=2.0, mpcolor=black, mshape='o')
-    elp.plot()
+	# other plot parameters
+	plt.tick_params(axis='x', labelsize=8)
+	plt.tick_params(axis='y', labelsize=4.4)
+	plt.xticks([i for i in range(60, 100, 5)])
+	plt.xlim(55, 85)
+	plt.ylim(positions[0], positions[-1])
+	plt.yticks(positions, labels)
+	plt.tight_layout()
 
-# add dotted line between individual readings and average
-plt.axhline(y=ypos + 0.5, color='black', linewidth=0.5, linestyle='dashed')
-
-# other plot parameters
-plt.tick_params(axis='x', labelsize=8)
-plt.tick_params(axis='y', labelsize=4.4)
-plt.xticks([i for i in range(60, 100, 5)])
-plt.xlim(55, 85)
-plt.ylim(positions[0], positions[-1])
-plt.yticks(positions, labels)
-plt.tight_layout()
-
-# save and close figure
-pdf.savefig()
-plt.clf()
-plt.cla()
-plt.close()
-pdf.close()
-os.chdir("../")
-print("Plot " + plotTitle + " done.")
+	# save and close figure
+	pdf.savefig()
+	plt.clf()
+	plt.cla()
+	plt.close()
+	pdf.close()
+	os.chdir("../")
+	print("Plot " + plotTitle + " done.")
 
 # function call
 plotComparison(priorname="No prior")
