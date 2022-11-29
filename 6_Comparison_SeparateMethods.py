@@ -217,7 +217,7 @@ def plotComparison(methodname='all', datasetname='all', priorname='all', doubles
 	# get filename for plot
 	plotTitle = 'H0whisker'
 	if datasetname is not 'all':
-		plotTitle = plotTitle + '_' + datasetname
+		plotTitle = plotTitle + '_' + datasetname.replace('*', 'star')
 	if methodname is not 'all':
 		plotTitle = plotTitle + '_' + methodname
 	if priorname is not 'all':
@@ -281,6 +281,8 @@ plotComparison(priorname="DES")
 plotComparison(datasetname="CC")
 plotComparison(datasetname="CC+SN")
 plotComparison(datasetname="CC+SN+BAO")
+plotComparison(datasetname="CC+SN*")
+plotComparison(datasetname="CC+SN*+BAO")
 plotComparison(methodname="GPR")
 plotComparison(methodname="MCMC LambdaCDM")
 plotComparison(methodname="MCMC GPR")
