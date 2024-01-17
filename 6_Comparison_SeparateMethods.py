@@ -7,15 +7,15 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-from matplotlib import rcParams
 
 black = [0, 0, 0]
 red = [1, 0, 0]
 blue = [0, 0, 1]
 
-config = {"mathtext.fontset": 'dejavusans'}
-rcParams.update(config)
-
+# rcParams['mathtext.fontset'] = 'custom'
+# rcParams['mathtext.rm'] = 'Bitstream Vera Sans'
+# rcParams['mathtext.it'] = 'Bitstream Vera Sans:italic'
+# rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
 
 class ErrorLinePlotter:
     def __init__(self, data, position):
@@ -97,12 +97,12 @@ class ErrorLinePlotter:
 
 
 # repository containing the .csv with the dataset
-data_path = "./comparison_datasets/"
+data_path = "G:/My Drive/MSc/SOR5200 - Dissertation/GaPP_27/Application/6_Comparison/comparison_datasets/"
 
 
 # sigma distance between two values of H0: see eq. (28) of Briffa et al. (2020)
 def calcsigmadistance(h01, h02, sigma1, sigma2):
-    dist = (h01 - h02) / np.sqrt(sigma1 ** 2 + sigma2 ** 2)
+    dist = (h01 - h02) / np.sqrt(sigma1**2 + sigma2**2)
     if dist >= 0:
         dist = " " + "{:.4f}".format(round(dist, 4))
     else:
@@ -111,9 +111,9 @@ def calcsigmadistance(h01, h02, sigma1, sigma2):
 
 
 def plotComparison(methodname='all', datasetname='all', priorname='all', doublesize=False, printvalues=False):
-    fil = data_path + dataname + 'Dataset.csv'
+	fil = data_path + 'AveragedKernelsDataset_noHomGPTP.csv'
 
-    # load the dataset and count the number of data points
+	# load the dataset and count the number of data points
 	nr = 1
 	with open(fil, 'r+') as f:
 		reader = csv.reader(f)
@@ -144,19 +144,22 @@ def plotComparison(methodname='all', datasetname='all', priorname='all', doubles
 
 	# filtering part
 	indicesToRemove = []
-	if methodname is not 'all':
+	if methodname != 'all':
 		a = np.where([method[i] != methodname for i in range(len(method))])[0]
 		indicesToRemove = np.concatenate((indicesToRemove, a))
-	if priorname is not 'all':
+		# print(indicesToRemove)
+	if priorname != 'all':
 		a = np.where([prior[i] != priorname for i in range(len(prior))])[0]
 		indicesToRemove = np.concatenate((indicesToRemove, a))
-	if datasetname is not 'all':
+		# print(indicesToRemove)
+	if datasetname != 'all':
 		a = np.where([dataset[i] != datasetname for i in range(len(dataset))])[0]
 		indicesToRemove = np.concatenate((indicesToRemove, a))
+		# print(indicesToRemove)
 
 	# if no indices to remove, then skip
 	try:
-		indicesToRemove = np.unique(indicesToRemove.ravel())
+		indicesToRemove = np.unique(indicesToRemove.ravel()).astype(int)
 	except AttributeError:
 		pass
 
@@ -211,16 +214,16 @@ def plotComparison(methodname='all', datasetname='all', priorname='all', doubles
 		positions.append(i)
 		labels.append('')
 
-	# move to "files" directory
-	os.chdir("./files")
+	# move to "files_paper" directory
+	os.chdir("G:/My Drive/MSc/SOR5200 - Dissertation/GaPP_27/Application/6_Comparison/files_paper")
 
 	# get filename for plot
 	plotTitle = 'H0whisker'
-	if datasetname is not 'all':
+	if datasetname != 'all':
 		plotTitle = plotTitle + '_' + datasetname.replace('*', 'star')
-	if methodname is not 'all':
+	if methodname != 'all':
 		plotTitle = plotTitle + '_' + methodname
-	if priorname is not 'all':
+	if priorname != 'all':
 		plotTitle = plotTitle + '_' + priorname
 
 	pdf = PdfPages(plotTitle + '.pdf')
@@ -253,13 +256,17 @@ def plotComparison(methodname='all', datasetname='all', priorname='all', doubles
 	plt.axhline(y=ypos + 0.5, color='black', linewidth=0.5, linestyle='dashed')
 
 	# other plot parameters
-	plt.tick_params(axis='x', labelsize=8)
-	plt.tick_params(axis='y', labelsize=4.4)
-	plt.xticks([i for i in range(60, 100, 5)])
+	axis_label_size = 5.5
+	plt.tick_params(axis='x', labelsize=axis_label_size+1)
+	plt.tick_params(axis='y', labelsize=axis_label_size)
+	plt.xticks([i for i in range(60, 85, 5)])
 	plt.xlim(55, 85)
 	plt.ylim(positions[0], positions[-1])
 	plt.yticks(positions, labels)
 	plt.tight_layout()
+
+	# x-axis label
+	plt.xlabel("$H_0 (km \ s^{-1} \ Mpc^{-1})$", fontdict={'size': axis_label_size+2})
 
 	# save and close figure
 	pdf.savefig()
@@ -272,7 +279,7 @@ def plotComparison(methodname='all', datasetname='all', priorname='all', doubles
 
 # function call
 plotComparison(priorname="No prior")
-plotComparison(priorname="Riess")
+plotComparison(priorname="SH0ES")
 plotComparison(priorname="TRGB")
 plotComparison(priorname="HW")
 plotComparison(priorname="CM")
