@@ -257,7 +257,7 @@ def plotComparison(methodname='all', datasetname='all', priorname='all', doubles
 
 	# other plot parameters
 	axis_label_size = 5.5
-	plt.tick_params(axis='x', labelsize=axis_label_size+1)
+	plt.tick_params(axis='x', labelsize=axis_label_size+0.5)
 	plt.tick_params(axis='y', labelsize=axis_label_size)
 	plt.xticks([i for i in range(60, 85, 5)])
 	plt.xlim(55, 85)
@@ -266,7 +266,7 @@ def plotComparison(methodname='all', datasetname='all', priorname='all', doubles
 	plt.tight_layout()
 
 	# x-axis label
-	plt.xlabel("$H_0 (km \ s^{-1} \ Mpc^{-1})$", fontdict={'size': axis_label_size+2})
+	plt.xlabel("$H_0 (km \ s^{-1} \ Mpc^{-1})$", fontdict={'size': axis_label_size+1})
 
 	# save and close figure
 	pdf.savefig()
